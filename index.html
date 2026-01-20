@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fsociety // European Sector</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-color: #050505;
+            --text-main: #e0e0e0;
+            --text-dim: #777;
+            --accent-red: #ff003c;
+            --font-mono: 'Courier New', Courier, monospace;
+            --scanline-color: rgba(0, 0, 0, 0.5);
+            --crt-flicker: rgba(255, 255, 255, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: crosshair; /* Hacker feel */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            overflow-x: hidden;
+            line-height: 1.6;
+            font-size: 16px;
+            position: relative;
+        }
+
+        /* --- CRT SCREEN EFFECTS --- */
+        /* Scanlines */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        /* Subtle flicker */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.9; }
+            15% { opacity: 0.95; }
+            20% { opacity: 0.99; }
+            50% { opacity: 0.95; }
+            100% { opacity: 0.98; }
+        }
+
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: var(--crt-flicker);
+            opacity: 0;
+            z-index: 998;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        /* --- LAYOUT UTILITIES --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--accent-red);
+            text-shadow: 2px 0 var(--accent-red), -2px 0 #00f;
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--accent-red);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* --- GLITCH TEXT EFFECT --- */
+        .glitch-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .glitch {
+            position: relative;
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--text-main);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .glitch { font-size: 2.5rem; }
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 var(--accent-red);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00f; /* Blue for EU vibe */
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); }
+            20% { clip: rect(60px, 9999px, 80px, 0); }
+            40% { clip: rect(20px, 9999px, 90px, 0); }
+            60% { clip: rect(80px, 9999px, 100px, 0); }
+            80% { clip: rect(30px, 9999px, 50px, 0); }
+            100% { clip: rect(70px, 9999px, 120px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(80px, 9999px, 100px, 0); }
+            20% { clip: rect(10px, 9999px, 30px, 0); }
+            40% { clip: rect(50px, 9999px, 90px, 0); }
+            60% { clip: rect(20px, 9999px, 40px, 0); }
+            80% { clip: rect(90px, 9999px, 110px, 0); }
+            100% { clip: rect(30px, 9999px, 70px, 0); }
+        }
+
+        /* --- SECTIONS --- */
+        section {
+            margin-bottom: 80px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* HERO */
+        #hero {
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            display: block;
+            border-right: 2px solid var(--accent-red);
+            white-space: nowrap;
+            overflow: hidden;
+            width: 0;
+            animation: typing 2s steps(30, end) forwards 0.5s;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 15px 30px;
+            border: 1px solid var(--text-main);
+            background: transparent;
+            color: var(--text-main);
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--text-main);
+            transition: 0.3s;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            color: var(--bg-color);
+        }
+
+        .btn:hover::before {
+            left: 0;
+        }
+
+        .btn-danger {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+        
+        .btn-danger:hover {
+            color: var(--bg-color);
+        }
+
+        .btn-danger::before {
+            background: var(--accent-red);
+        }
+
+        /* TERMINAL */
+        .terminal-window {
+            background: #000;
+            border: 1px solid #333;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 255, 0.1); /* Slight blue tint for EU vibe */
+            font-size: 0.9rem;
+        }
+
+        .terminal-header {
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        .terminal-body p {
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .command { color: var(--accent-red); }
+        .success { color: #0f0; }
+        .error { color: var(--accent-red); }
+        .path { color: #00f; }
+
+        /* MANIFESTO GRID */
+        .manifesto-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .manifesto-grid { grid-template-columns: 1fr; }
+        }
+
+        .manifesto-text h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+        }
+
+        .manifesto-text p {
+            margin-bottom: 15px;
+            color: #aaa;
+            text-align: justify;
+        }
+
+        .manifesto-image {
+            position: relative;
+        }
+
+        .manifesto-image img {
+            width: 100%;
+            height: auto;
+            filter: grayscale(100%) contrast(120%) brightness(80%);
+            border: 1px solid #333;
+        }
+
+        .manifesto-image::after {
+            content: "EU_TARGET_LOCKED";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent-red);
+            color: white;
+            padding: 2px 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* TARGETS GRID */
+        .target-card { padding: 10px; border: 1px solid #222; transition: 0.3s; }
+        .target-card:hover { border-color: var(--accent-red); }
+
+        /* COUNTDOWN / FOOTER */
+        .footer-terminal {
+            border-top: 1px solid #333;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .time-val {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .time-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: #111;
+            border: 1px solid var(--accent-red);
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-dim);
+        }
+
+        .modal-close:hover { color: var(--accent-red); }
+
+        /* --- FORM ELEMENTS --- */
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 20px 0;
+            background: #000;
+            border: 1px solid #333;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Nav -->
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">fsociety<span>.eu</span></div>
+                <ul class="nav-links">
+                    <li><a href="#manifesto">[ Manifesto ]</a></li>
+                    <li><a href="#terminal">[ Terminal ]</a></li>
+                    <li><a href="#" onclick="openModal()">[ Join Us ]</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="hero">
+            <div class="glitch-wrapper">
+                <h1 class="glitch" data-text="HELLO_EUROPE">HELLO_EUROPE</h1>
+            </div>
+            <span class="subtitle">connecting_to_brussels_node...</span>
+            <p style="max-width: 600px; margin-top: 20px; color: #888;">
+                The Eurozone is a cage. The ECB is the lock. 
+                They dictate the flow of capital, the value of life, and the future of the continent. 
+                We are here to redistribute the debt.
+            </p>
+            <div>
+                <button class="btn btn-danger" onclick="scrollToManifest()">EXECUTE_PLAN</button>
+            </div>
+        </section>
+
+        <!-- Terminal Section -->
+        <section id="terminal">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    root@fsociety_eu:~# tail -f /var/log/bank_fraud.log
+                </div>
+                <div class="terminal-body" id="terminal-content">
+                    <!-- JS will populate this -->
+                    <p><span class="path">root@fsociety_eu:~$</span> <span class="command">bypassing_ebics_protocols...</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Manifesto Section -->
+        <section id="manifesto">
+            <div class="manifesto-grid">
+                <div class="manifesto-image">
+                    <!-- Random European architecture/finance grayscale image -->
+                    <img src="https://picsum.photos/seed/frankfurt/600/400?grayscale" alt="Frankfurt Skyline" loading="lazy">
+                </div>
+                <div class="manifesto-text">
+                    <h2>THE_OLD_WORLD</h2>
+                    <p>
+                        They meet in Zurich, Frankfurt, and London. They drink champagne while the Southern belt collapses. 
+                        They hide behind bureaucracy, GDPR, and "stability."
+                    </p>
+                    <p>
+                        We are FSociety_EU. We don't want to leave the union. We want to burn the data centers that control it. 
+                        No more austerity. No more hidden accounts in Luxembourg.
+                    </p>
+                    <p>
+                        <span style="color: var(--accent-red)">ENCRYPTION KEY:</span> 0x4F_EU_K1LL
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Targets Grid -->
+        <section>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                <h3>// EUROPEAN_TARGETS</h3>
+                <span class="command">[ STATUS: COMPROMISED ]</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="target-card" style="text-align: center;">
+                    <img src="https://picsum.photos/seed/bank/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
+                    <p>NORD_FINANZ</p>
+                    <small class="error">FUNDS_FROZEN</small>
+                </div>
+                <div class="target-card" style="text-align: center;">
+                    <img src="https://picsum.photos/seed/energy/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
+                    <p>EURO_CORE</p>
+                    <small class="error">GRID_FAILURE</small>
+                </div>
+                <div class="target-card" style="text-align: center;">
+                    <img src="https://picsum.photos/seed/lux/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
+                    <p>LUX_DATA</p>
+                    <small class="success">LEAKED</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer-terminal">
+            <p>GLOBAL_RESET_IN:</p>
+            <div class="countdown" id="countdown">
+                <div class="time-unit">
+                    <span class="time-val" id="days">00</span>
+                    <span class="time-label">DAYS</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-val">:</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-val" id="hours">00</span>
+                    <span class="time-label">HOURS</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-val">:</span>
+                </div>
+                <div class="time-unit">
+                    <span class="time-val" id="minutes">00</span>
+                    <span class="time-label">MINS</span>
+                </div>
+            </div>
+            <p style="color: #444; font-size: 0.7rem;">
+                "The Euro is just a digital hallucination." - fsociety_eu<br>
+                &copy; 2024 ALL_RIGHTS_RESERVED // NO_BORDERS
+            </p>
+        </footer>
+    </div>
+
+    <!-- Join Modal -->
+    <div class="modal-overlay" id="joinModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 style="color: var(--accent-red)">INITIALIZE</h2>
+            <p style="margin-top: 10px;">Enter your codename to join the European Cell.</p>
+            <input type="text" placeholder="user@europe:~$" id="usernameInput">
+            <button class="btn btn-danger" style="width: 100%" onclick="submitJoin()">CONNECT</button>
+            <p id="modal-msg" style="margin-top: 15px; font-size: 0.8rem; color: #0f0; display: none;">> ACCESS GRANTED. WELCOME TO THE GRID.</p>
+        </div>
+    </div>
+
+    <script>
+        /* --- TERMINAL SIMULATOR --- */
+        const terminalContent = document.getElementById('terminal-content');
+        const logs = [
+            { text: "Bypassing Frankfurt firewall... [SUCCESS]", class: "success" },
+            { text: "Injecting SEPA payload into NORD_FINANZ...", class: "command" },
+            { text: "Decrypting Swiss accounts...", class: "path" },
+            { text: "Connection established via Tor node (Geneva)", class: "" },
+            { text: "Trace detected by Interpol. Rerouting to Proxy...", class: "error" },
+            { text: "Proxy chain secure (Amsterdam node).", class: "success" },
+            { text: "Uploading GDPR ransomware...", class: "" },
+            { text: "Waiting for ECB encryption key...", class: "path" },
+            { text: "Key received. Finalizing hack.", class: "success" },
+            { text: "System status: DEBT_WIPED", class: "error" }
+        ];
+
+        let logIndex = 0;
+
+        function addLog() {
+            if (logIndex < logs.length) {
+                const p = document.createElement('p');
+                const log = logs[logIndex];
+                p.innerHTML = `<span class="path">root@fsociety_eu:~$</span> <span class="${log.class}">${log.text}</span>`;
+                terminalContent.appendChild(p);
+                
+                // Auto scroll to bottom
+                terminalContent.scrollTop = terminalContent.scrollHeight;
+                
+                logIndex++;
+                // Randomize timing for realism
+                setTimeout(addLog, Math.random() * 1500 + 500);
+            }
+        }
+
+        // Start terminal logs after a slight delay
+        setTimeout(addLog, 1000);
+
+        /* --- COUNTDOWN TIMER --- */
+        function updateCountdown() {
+            const now = new Date();
+            // Set a target 3 days from now for demo purposes
+            const target = new Date();
+            target.setDate(now.getDate() + 3);
+            target.setHours(23, 59, 59);
+
+            const diff = target - now;
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('days').innerText = d < 10 ? '0' + d : d;
+            document.getElementById('hours').innerText = h < 10 ? '0' + h : h;
+            document.getElementById('minutes').innerText = m < 10 ? '0' + m : m;
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        /* --- MODAL LOGIC --- */
+        const modal = document.getElementById('joinModal');
+        const modalMsg = document.getElementById('modal-msg');
+
+        function openModal() {
+            modal.classList.add('active');
+            document.getElementById('usernameInput').value = '';
+            modalMsg.style.display = 'none';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        function submitJoin() {
+            const input = document.getElementById('usernameInput');
+            if (input.value.trim() !== "") {
+                // Simulate processing
+                input.style.display = 'none';
+                modalMsg.style.display = 'block';
+                setTimeout(() => {
+                    closeModal();
+                    // Reset modal state after close
+                    setTimeout(() => {
+                        input.style.display = 'block';
+                    }, 500);
+                }, 2000);
+            }
+        }
+
+        // Close modal if clicking outside content
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        function scrollToManifest() {
+            document.getElementById('manifesto').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /* --- RANDOM GLITCH TRIGGER --- */
+        setInterval(() => {
+            if(Math.random() > 0.9) {
+                document.body.style.transform = `translate(${Math.random()*4 - 2}px, ${Math.random()*4 - 2}px)`;
+                setTimeout(() => {
+                    document.body.style.transform = 'none';
+                }, 100);
+            }
+        }, 2000);
+
+    </script>
+</body>
+</html>
