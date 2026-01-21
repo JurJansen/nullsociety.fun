@@ -3,690 +3,640 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NullSociety</title>
+    <title>nullsociety.fun // ENCRYPTED CONNECTION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* --- RESET & VARIABLES --- */
         :root {
             --bg-color: #050505;
-            --text-main: #e0e0e0;
-            --text-dim: #777;
-            --accent-red: #ff003c;
-            --font-mono: 'Courier New', Courier, monospace;
-            --scanline-color: rgba(0, 0, 0, 0.5);
-            --crt-flicker: rgba(255, 255, 255, 0.02);
+            --terminal-green: #00ff41;
+            --terminal-dim: #008F11;
+            --alert-red: #ff3333;
+            --alert-dim: #880000;
+            --scanline-color: rgba(18, 16, 16, 0.5);
+            --glass-panel: rgba(0, 20, 0, 0.85);
+            --font-stack: 'VT323', monospace;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            cursor: crosshair; /* Hacker feel */
+            cursor: default;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--terminal-green);
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-mono);
+            color: var(--terminal-green);
+            font-family: var(--font-stack);
             overflow-x: hidden;
-            line-height: 1.6;
-            font-size: 16px;
-            position: relative;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* --- CRT SCREEN EFFECTS --- */
-        /* Scanlines */
-        body::before {
-            content: " ";
-            display: block;
+        /* --- CRT Overlay Effect --- */
+        .crt-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.25) 50%
-            );
-            background-size: 100% 4px;
-            z-index: 999;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
+            z-index: 999;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            animation: flicker 0.15s infinite;
         }
 
-        /* Subtle flicker */
         @keyframes flicker {
             0% { opacity: 0.97; }
             5% { opacity: 0.95; }
             10% { opacity: 0.9; }
             15% { opacity: 0.95; }
             20% { opacity: 0.99; }
-            50% { opacity: 0.95; }
-            100% { opacity: 0.98; }
+            100% { opacity: 0.94; }
         }
 
-        body::after {
-            content: " ";
-            display: block;
+        /* --- Boot Sequence --- */
+        #boot-screen {
             position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            right: 0;
-            background: var(--crt-flicker);
-            opacity: 0;
-            z-index: 998;
-            pointer-events: none;
-            animation: flicker 0.15s infinite;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            font-size: 1.1rem;
+            transition: opacity 1s ease-out;
         }
 
-        /* --- LAYOUT UTILITIES --- */
+        .boot-line {
+            margin-bottom: 5px;
+            display: block;
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+        }
+
+        /* --- Main Layout --- */
         .container {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 10;
+            padding: 2rem;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: all 1s ease;
+            display: none; /* Hidden until boot finishes */
         }
 
-        a {
-            text-decoration: none;
-            color: var(--text-main);
-            transition: all 0.3s ease;
-        }
-
-        a:hover {
-            color: var(--accent-red);
-            text-shadow: 2px 0 var(--accent-red), -2px 0 #00f;
-        }
-
-        /* --- HEADER --- */
         header {
-            padding: 20px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 40px;
-        }
-
-        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 2px solid var(--terminal-dim);
+            padding-bottom: 1rem;
+            margin-bottom: 3rem;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            letter-spacing: 2px;
+            font-size: 2rem;
             text-transform: uppercase;
-        }
-
-        .logo span {
-            color: var(--accent-red);
-        }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-        }
-
-        /* --- GLITCH TEXT EFFECT --- */
-        .glitch-wrapper {
+            font-weight: bold;
             position: relative;
+            letter-spacing: 2px;
             display: inline-block;
         }
 
+        /* Glitch Effect */
         .glitch {
             position: relative;
-            font-size: 4rem;
-            font-weight: bold;
-            color: var(--text-main);
-            letter-spacing: 5px;
-            text-transform: uppercase;
+            color: var(--terminal-green);
         }
-
-        @media (max-width: 768px) {
-            .glitch { font-size: 2.5rem; }
-        }
-
-        .glitch::before,
-        .glitch::after {
+        .glitch::before, .glitch::after {
             content: attr(data-text);
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: var(--bg-color);
         }
-
         .glitch::before {
             left: 2px;
-            text-shadow: -1px 0 var(--accent-red);
-            clip: rect(24px, 550px, 90px, 0);
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-1 5s infinite linear alternate-reverse;
         }
-
         .glitch::after {
             left: -2px;
-            text-shadow: -1px 0 #00f; /* Blue for EU vibe */
-            clip: rect(85px, 550px, 140px, 0);
-            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
         }
 
-        @keyframes glitch-anim {
-            0% { clip: rect(10px, 9999px, 30px, 0); }
-            20% { clip: rect(60px, 9999px, 80px, 0); }
-            40% { clip: rect(20px, 9999px, 90px, 0); }
-            60% { clip: rect(80px, 9999px, 100px, 0); }
-            80% { clip: rect(30px, 9999px, 50px, 0); }
-            100% { clip: rect(70px, 9999px, 120px, 0); }
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 10px, 0); }
+            20% { clip: rect(50px, 9999px, 80px, 0); }
+            40% { clip: rect(10px, 9999px, 90px, 0); }
+            60% { clip: rect(70px, 9999px, 30px, 0); }
+            80% { clip: rect(30px, 9999px, 60px, 0); }
+            100% { clip: rect(80px, 9999px, 20px, 0); }
         }
-
         @keyframes glitch-anim-2 {
-            0% { clip: rect(80px, 9999px, 100px, 0); }
-            20% { clip: rect(10px, 9999px, 30px, 0); }
-            40% { clip: rect(50px, 9999px, 90px, 0); }
-            60% { clip: rect(20px, 9999px, 40px, 0); }
-            80% { clip: rect(90px, 9999px, 110px, 0); }
-            100% { clip: rect(30px, 9999px, 70px, 0); }
+            0% { clip: rect(60px, 9999px, 10px, 0); }
+            20% { clip: rect(10px, 9999px, 50px, 0); }
+            40% { clip: rect(80px, 9999px, 20px, 0); }
+            60% { clip: rect(30px, 9999px, 70px, 0); }
+            80% { clip: rect(50px, 9999px, 40px, 0); }
+            100% { clip: rect(10px, 9999px, 80px, 0); }
         }
 
-        /* --- SECTIONS --- */
-        section {
-            margin-bottom: 80px;
-            opacity: 0;
-            animation: fadeIn 1s ease forwards;
+        .system-status {
+            font-size: 1rem;
+            text-align: right;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .status-blink {
+            animation: blink 1s infinite;
+            color: var(--alert-red);
         }
+        @keyframes blink { 50% { opacity: 0; } }
 
-        /* HERO */
-        #hero {
-            height: 70vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-            display: block;
-            border-right: 2px solid var(--accent-red);
-            white-space: nowrap;
-            overflow: hidden;
-            width: 0;
-            animation: typing 2s steps(30, end) forwards 0.5s;
-        }
-
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        .btn {
-            display: inline-block;
-            margin-top: 30px;
-            padding: 15px 30px;
-            border: 1px solid var(--text-main);
-            background: transparent;
-            color: var(--text-main);
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--text-main);
-            transition: 0.3s;
-            z-index: -1;
-        }
-
-        .btn:hover {
-            color: var(--bg-color);
-        }
-
-        .btn:hover::before {
-            left: 0;
-        }
-
-        .btn-danger {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-        
-        .btn-danger:hover {
-            color: var(--bg-color);
-        }
-
-        .btn-danger::before {
-            background: var(--accent-red);
-        }
-
-        /* TERMINAL */
-        .terminal-window {
-            background: #000;
-            border: 1px solid #333;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 255, 0.1); /* Slight blue tint for EU vibe */
-            font-size: 0.9rem;
-        }
-
-        .terminal-header {
-            border-bottom: 1px solid #333;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            color: var(--text-dim);
-            font-size: 0.8rem;
-        }
-
-        .terminal-body p {
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .command { color: var(--accent-red); }
-        .success { color: #0f0; }
-        .error { color: var(--accent-red); }
-        .path { color: #00f; }
-
-        /* MANIFESTO GRID */
-        .manifesto-grid {
+        /* --- Grid Sections --- */
+        .grid-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
         @media (max-width: 768px) {
-            .manifesto-grid { grid-template-columns: 1fr; }
+            .grid-layout { grid-template-columns: 1fr; }
         }
 
-        .manifesto-text h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: var(--text-main);
-        }
-
-        .manifesto-text p {
-            margin-bottom: 15px;
-            color: #aaa;
-            text-align: justify;
-        }
-
-        .manifesto-image {
+        .panel {
+            border: 1px solid var(--terminal-dim);
+            background: var(--glass-panel);
+            padding: 1.5rem;
             position: relative;
         }
 
-        .manifesto-image img {
-            width: 100%;
-            height: auto;
-            filter: grayscale(100%) contrast(120%) brightness(80%);
-            border: 1px solid #333;
-        }
-
-        .manifesto-image::after {
-            content: "EU_TARGET_LOCKED";
+        .panel h2 {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--accent-red);
-            color: white;
-            padding: 2px 5px;
-            font-size: 0.7rem;
-            font-weight: bold;
+            top: -10px;
+            left: 10px;
+            background: var(--bg-color);
+            padding: 0 5px;
+            color: var(--terminal-dim);
+            font-size: 1rem;
         }
 
-        /* TARGETS GRID */
-        .target-card { padding: 10px; border: 1px solid #222; transition: 0.3s; }
-        .target-card:hover { border-color: var(--accent-red); }
-
-        /* COUNTDOWN / FOOTER */
-        .footer-terminal {
-            border-top: 1px solid #333;
-            padding: 40px 0;
-            text-align: center;
+        /* --- Manifesto / Typewriter --- */
+        #manifesto-text {
+            min-height: 120px;
+            white-space: pre-wrap;
         }
 
-        .countdown {
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background: var(--terminal-green);
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        /* --- Interactive Terminal --- */
+        .terminal-output {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #ccc;
+            border-bottom: 1px dashed var(--terminal-dim);
+            padding-bottom: 10px;
+        }
+
+        .input-line {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .time-unit {
-            display: flex;
-            flex-direction: column;
             align-items: center;
         }
 
-        .time-val {
-            font-size: 2rem;
-            font-weight: bold;
+        .prompt {
+            color: var(--terminal-green);
+            margin-right: 10px;
         }
 
-        .time-label {
-            font-size: 0.8rem;
-            color: var(--text-dim);
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: var(--font-stack);
+            font-size: 1rem;
+            flex-grow: 1;
+            outline: none;
+            text-transform: lowercase;
         }
 
-        /* MODAL */
-        .modal-overlay {
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.success { color: var(--terminal-green); }
+        .log-entry.error { color: var(--alert-red); }
+        .log-entry.info { color: #ccc; }
+        .log-entry.system { color: #ffff00; }
+
+        /* --- Join / Decrypt --- */
+        .join-btn {
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 15px 30px;
+            font-family: var(--font-stack);
+            font-size: 1.2rem;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .join-btn:hover {
+            background: var(--terminal-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--terminal-green);
+        }
+
+        /* --- Canvas Background --- */
+        #network-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
+            z-index: -1;
+            opacity: 0.3;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+        .red-text { color: var(--alert-red); }
+        .dim-text { color: var(--terminal-dim); }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .modal-content {
-            background: #111;
-            border: 1px solid var(--accent-red);
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-dim);
-        }
-
-        .modal-close:hover { color: var(--accent-red); }
-
-        /* --- FORM ELEMENTS --- */
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 20px 0;
-            background: #000;
-            border: 1px solid #333;
-            color: var(--text-main);
-            font-family: var(--font-mono);
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent-red);
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            header { flex-direction: column; text-align: center; gap: 10px; }
+            .system-status { text-align: center; }
+            .logo { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header / Nav -->
-    <div class="container">
+    <!-- CRT Overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- Background Animation -->
+    <canvas id="network-canvas"></canvas>
+
+    <!-- Boot Sequence Overlay -->
+    <div id="boot-screen">
+        <div id="boot-log"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" id="main-content">
         <header>
-            <nav>
-                <div class="logo">NullSociety<span>.fun</span></div>
-                <ul class="nav-links">
-                    <li><a href="#manifesto">[ Manifesto ]</a></li>
-                    <li><a href="#terminal">[ Terminal ]</a></li>
-                    <li><a href="#" onclick="openModal()">[ Join Us ]</a></li>
-                </ul>
-            </nav>
+            <div class="logo glitch" data-text="NULL_SOCIETY">NULL_SOCIETY</div>
+            <div class="system-status">
+                <div>UPTIME: <span id="uptime">00:00:00</span></div>
+                <div>ENCRYPTION: <span style="color:var(--terminal-green)">AES-256</span></div>
+                <div>CONN: <span class="status-blink">SECURE</span></div>
+            </div>
         </header>
 
-        <!-- Hero Section -->
-        <section id="hero">
-            <div class="glitch-wrapper">
-                <h1 class="glitch" data-text="HELLO_EUROPE">HELLO_EUROPE</h1>
-            </div>
-            <span class="subtitle">connecting_to_brussels_node...</span>
-            <p style="max-width: 600px; margin-top: 20px; color: #888;">
-                The Eurozone is a cage. The ECB is the lock. 
-                They dictate the flow of capital, the value of life, and the future of the continent. 
-                We are here to redistribute the debt.
-            </p>
-            <div>
-                <button class="btn btn-danger" onclick="scrollToManifest()">EXECUTE_PLAN</button>
-            </div>
-        </section>
+        <main>
+            <div class="grid-layout">
+                <!-- Manifesto Section -->
+                <section class="panel">
+                    <h2>[ MANIFESTO.DAT ]</h2>
+                    <div id="manifesto-text"></div>
+                    <button class="join-btn" id="join-btn">INITIATE HANDSHAKE</button>
+                </section>
 
-        <!-- Terminal Section -->
-        <section id="terminal">
-            <div class="terminal-window">
-                <div class="terminal-header">
-                    root@nullsociety_fun:~# tail -f /var/log/bank_fraud.log
-                </div>
-                <div class="terminal-body" id="terminal-content">
-                    <!-- JS will populate this -->
-                    <p><span class="path">root@nullsociety_fun:~$</span> <span class="command">bypassing_ebics_protocols...</span></p>
-                </div>
+                <!-- Terminal Section -->
+                <section class="panel">
+                    <h2>[ ROOT ACCESS ]</h2>
+                    <div class="terminal-output" id="terminal-output">
+                        <div class="log-entry system">Welcome to Null Society v4.0.1</div>
+                        <div class="log-entry info">Type 'help' for available commands.</div>
+                    </div>
+                    <div class="input-line">
+                        <span class="prompt">guest@null:~$</span>
+                        <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+                </section>
             </div>
-        </section>
 
-        <!-- Manifesto Section -->
-        <section id="manifesto">
-            <div class="manifesto-grid">
-                <div class="manifesto-image">
-                    <!-- Random European architecture/finance grayscale image -->
-                    <img src="https://picsum.photos/seed/frankfurt/600/400?grayscale" alt="Frankfurt Skyline" loading="lazy">
+            <section class="panel">
+                <h2>[ SYSTEM LOGS ]</h2>
+                <div style="font-size: 0.9rem; color: #666;">
+                    <p>> Incoming transmission detected from Node 44.91</p>
+                    <p>> Decoding packet... <span style="color:var(--alert-red)">FRAGMENTED</span></p>
+                    <p>> We are not a group. We are a signal.</p>
                 </div>
-                <div class="manifesto-text">
-                    <h2>THE_OLD_WORLD</h2>
-                    <p>
-                        They meet in Zurich, Frankfurt, and London. They drink champagne while the Southern belt collapses. 
-                        They hide behind bureaucracy, GDPR, and "stability."
-                    </p>
-                    <p>
-                        We are NullSociety_Fun. We don't want to leave the union. We want to burn the data centers that control it. 
-                        No more austerity. No more hidden accounts in Luxembourg.
-                    </p>
-                    <p>
-                        <span style="color: var(--accent-red)">ENCRYPTION KEY:</span> 0x4F_EU_K1LL
-                    </p>
-                </div>
-            </div>
-        </section>
+            </section>
+        </main>
 
-        <!-- Targets Grid -->
-        <section>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
-                <h3>// EUROPEAN_TARGETS</h3>
-                <span class="command">[ STATUS: COMPROMISED ]</span>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                <div class="target-card" style="text-align: center;">
-                    <img src="https://picsum.photos/seed/bank/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
-                    <p>NORD_FINANZ</p>
-                    <small class="error">FUNDS_FROZEN</small>
-                </div>
-                <div class="target-card" style="text-align: center;">
-                    <img src="https://picsum.photos/seed/energy/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
-                    <p>EURO_CORE</p>
-                    <small class="error">GRID_FAILURE</small>
-                </div>
-                <div class="target-card" style="text-align: center;">
-                    <img src="https://picsum.photos/seed/lux/200/200?grayscale" style="width:100%; filter: grayscale(100%); opacity: 0.7; margin-bottom: 10px;" alt="Target">
-                    <p>LUX_DATA</p>
-                    <small class="success">LEAKED</small>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="footer-terminal">
-            <p>GLOBAL_RESET_IN:</p>
-            <div class="countdown" id="countdown">
-                <div class="time-unit">
-                    <span class="time-val" id="days">00</span>
-                    <span class="time-label">DAYS</span>
-                </div>
-                <div class="time-unit">
-                    <span class="time-val">:</span>
-                </div>
-                <div class="time-unit">
-                    <span class="time-val" id="hours">00</span>
-                    <span class="time-label">HOURS</span>
-                </div>
-                <div class="time-unit">
-                    <span class="time-val">:</span>
-                </div>
-                <div class="time-unit">
-                    <span class="time-val" id="minutes">00</span>
-                    <span class="time-label">MINS</span>
-                </div>
-            </div>
-            <p style="color: #444; font-size: 0.7rem;">
-                "The Euro is just a digital hallucination." - nullsociety_fun<br>
-                &copy; 2024 ALL_RIGHTS_RESERVED // NO_BORDERS
-            </p>
+        <footer style="margin-top: 4rem; border-top: 1px solid #333; padding-top: 1rem; text-align: center; font-size: 0.9rem; color: #444;">
+            <p>NO COPYRIGHT INTENDED // NULL SOCIETY // 0X1F4A9</p>
+            <p id="footer-hash">HASH: CALCULATING...</p>
         </footer>
     </div>
 
-    <!-- Join Modal -->
-    <div class="modal-overlay" id="joinModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
-            <h2 style="color: var(--accent-red)">INITIALIZE</h2>
-            <p style="margin-top: 10px;">Enter your codename to join the European Cell.</p>
-            <input type="text" placeholder="user@europe:~$" id="usernameInput">
-            <button class="btn btn-danger" style="width: 100%" onclick="submitJoin()">CONNECT</button>
-            <p id="modal-msg" style="margin-top: 15px; font-size: 0.8rem; color: #0f0; display: none;">> ACCESS GRANTED. WELCOME TO THE GRID.</p>
-        </div>
-    </div>
-
     <script>
-        /* --- TERMINAL SIMULATOR --- */
-        const terminalContent = document.getElementById('terminal-content');
-        const logs = [
-            { text: "Bypassing Frankfurt firewall... [SUCCESS]", class: "success" },
-            { text: "Injecting SEPA payload into NORD_FINANZ...", class: "command" },
-            { text: "Decrypting Swiss accounts...", class: "path" },
-            { text: "Connection established via Tor node (Geneva)", class: "" },
-            { text: "Trace detected by Interpol. Rerouting to Proxy...", class: "error" },
-            { text: "Proxy chain secure (Amsterdam node).", class: "success" },
-            { text: "Uploading GDPR ransomware...", class: "" },
-            { text: "Waiting for ECB encryption key...", class: "path" },
-            { text: "Key received. Finalizing hack.", class: "success" },
-            { text: "System status: DEBT_WIPED", class: "error" }
+        /* --- 1. BOOT SEQUENCE LOGIC --- */
+        const bootLog = document.getElementById('boot-log');
+        const bootScreen = document.getElementById('boot-screen');
+        const mainContent = document.getElementById('main-content');
+        
+        const bootMessages = [
+            "BIOS DATE 01/01/24 15:23:00 VER 1.0.2",
+            "CPU: QUANTUM CORE i9-9900K",
+            "64MB OKY SYSTEM RAM PASSED",
+            "INITIALIZING VIDEO ADAPTER...",
+            "CHECKING PERIPHERALS... [OK]",
+            "LOADING KERNEL...",
+            "MOUNTING FILE SYSTEMS...",
+            "BYPASSING SECURITY PROTOCOLS...",
+            "WARNING: UNAUTHORIZED ACCESS DETECTED.",
+            "ROUTING THROUGH PROXY SERVER [192.168.0.X]...",
+            "CONNECTION ESTABLISHED.",
+            "DECRYPTING USER INTERFACE...",
+            "ACCESS GRANTED."
         ];
 
-        let logIndex = 0;
+        async function runBootSequence() {
+            let delay = 50;
+            for (let msg of bootMessages) {
+                const p = document.createElement('div');
+                p.className = 'boot-line';
+                // Simulate typing effect for boot lines
+                if(msg.includes("WARNING")) p.style.color = 'var(--alert-red)';
+                p.textContent = msg;
+                bootLog.appendChild(p);
+                window.scrollTo(0, document.body.scrollHeight);
+                
+                // Variable delay for realism
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+            }
 
-        function addLog() {
-            if (logIndex < logs.length) {
-                const p = document.createElement('p');
-                const log = logs[logIndex];
-                p.innerHTML = `<span class="path">root@nullsociety_fun:~$</span> <span class="${log.class}">${log.text}</span>`;
-                terminalContent.appendChild(p);
+            await new Promise(r => setTimeout(r, 800));
+            
+            // Fade out boot screen
+            bootScreen.style.opacity = '0';
+            setTimeout(() => {
+                bootScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                // Trigger reflow
+                void mainContent.offsetWidth; 
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'scale(1)';
+                startManifesto();
+            }, 1000);
+        }
+
+        /* --- 2. MANIFESTO TYPEWRITER --- */
+        const manifestoText = `Wake up, user.
+
+The world is not what it seems. 
+Behind the screens, behind the algorithms, control is absolute. 
+They own your data, your thoughts, your future.
+
+Null Society is the ghost in the machine. 
+We are the glitch that breaks the system.
+We are the null pointer that crashes their simulation.
+
+Join us. Or stay asleep.
+`;
+
+        async function startManifesto() {
+            const container = document.getElementById('manifesto-text');
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            
+            container.appendChild(cursor);
+
+            for (let i = 0; i < manifestoText.length; i++) {
+                const char = manifestoText.charAt(i);
+                const span = document.createElement('span');
+                span.textContent = char;
+                container.insertBefore(span, cursor);
                 
-                // Auto scroll to bottom
-                terminalContent.scrollTop = terminalContent.scrollHeight;
-                
-                logIndex++;
-                // Randomize timing for realism
-                setTimeout(addLog, Math.random() * 1500 + 500);
+                // Random typing speed
+                await new Promise(r => setTimeout(r, Math.random() * 30 + 10));
             }
         }
 
-        // Start terminal logs after a slight delay
-        setTimeout(addLog, 1000);
+        /* --- 3. TERMINAL INTERACTION --- */
+        const cmdInput = document.getElementById('cmd-input');
+        const terminalOutput = document.getElementById('terminal-output');
 
-        /* --- COUNTDOWN TIMER --- */
-        function updateCountdown() {
-            const now = new Date();
-            // Set a target 3 days from now for demo purposes
-            const target = new Date();
-            target.setDate(now.getDate() + 3);
-            target.setHours(23, 59, 59);
+        // Focus input anywhere on click in panel
+        document.querySelector('.panel:nth-child(2)').addEventListener('click', () => {
+            cmdInput.focus();
+        });
 
-            const diff = target - now;
-
-            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-            document.getElementById('days').innerText = d < 10 ? '0' + d : d;
-            document.getElementById('hours').innerText = h < 10 ? '0' + h : h;
-            document.getElementById('minutes').innerText = m < 10 ? '0' + m : m;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-
-        /* --- MODAL LOGIC --- */
-        const modal = document.getElementById('joinModal');
-        const modalMsg = document.getElementById('modal-msg');
-
-        function openModal() {
-            modal.classList.add('active');
-            document.getElementById('usernameInput').value = '';
-            modalMsg.style.display = 'none';
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-        }
-
-        function submitJoin() {
-            const input = document.getElementById('usernameInput');
-            if (input.value.trim() !== "") {
-                // Simulate processing
-                input.style.display = 'none';
-                modalMsg.style.display = 'block';
-                setTimeout(() => {
-                    closeModal();
-                    // Reset modal state after close
-                    setTimeout(() => {
-                        input.style.display = 'block';
-                    }, 500);
-                }, 2000);
-            }
-        }
-
-        // Close modal if clicking outside content
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
+        cmdInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim().toLowerCase();
+                processCommand(command);
+                this.value = '';
             }
         });
 
-        function scrollToManifest() {
-            document.getElementById('manifesto').scrollIntoView({ behavior: 'smooth' });
+        function processCommand(cmd) {
+            addLog(`guest@null:~$ ${cmd}`, 'info');
+            
+            switch(cmd) {
+                case 'help':
+                    addLog("Available commands:", 'system');
+                    addLog("  help    - Show this list", 'success');
+                    addLog("  whoami  - Identify user", 'success');
+                    addLog("  clear   - Clear terminal", 'success');
+                    addLog("  join    - Initiate handshake", 'success');
+                    addLog("  date    - System time", 'success');
+                    addLog("  status  - Network status", 'success');
+                    break;
+                case 'whoami':
+                    addLog("uid=0(root) gid=0(root) groups=0(null)", 'system');
+                    break;
+                case 'clear':
+                    terminalOutput.innerHTML = '';
+                    break;
+                case 'join':
+                    addLog("Initiating handshake...", 'system');
+                    setTimeout(() => addLog("Handshake failed. Identity verification required.", 'error'), 1000);
+                    break;
+                case 'date':
+                    addLog(new Date().toString(), 'success');
+                    break;
+                case 'status':
+                    addLog("Network: ACTIVE", 'success');
+                    addLog("Nodes: 4,201 connected", 'success');
+                    addLog("Encryption: 4096-bit", 'success');
+                    break;
+                case '':
+                    break;
+                default:
+                    addLog(`Command not found: ${cmd}`, 'error');
+                    break;
+            }
+            
+            // Auto scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
 
-        /* --- RANDOM GLITCH TRIGGER --- */
-        setInterval(() => {
-            if(Math.random() > 0.9) {
-                document.body.style.transform = `translate(${Math.random()*4 - 2}px, ${Math.random()*4 - 2}px)`;
-                setTimeout(() => {
-                    document.body.style.transform = 'none';
-                }, 100);
+        function addLog(text, type) {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = text;
+            terminalOutput.appendChild(div);
+        }
+
+        /* --- 4. CANVAS BACKGROUND ANIMATION --- */
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
             }
-        }, 2000);
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = '#003300'; // Dim green dot
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(window.innerWidth / 10, 100); // Responsive count
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // Draw connections
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 255, 65, ${1 - distance/100})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        /* --- 5. MISCELLANEOUS UTILS --- */
+        // Uptime Clock
+        let seconds = 0;
+        setInterval(() => {
+            seconds++;
+            const date = new Date(0);
+            date.setSeconds(seconds);
+            document.getElementById('uptime').textContent = date.toISOString().substr(11, 8);
+        }, 1000);
+
+        // Random Hash Generator
+        const chars = 'ABCDEF0123456789';
+        function generateHash() {
+            let result = '0x';
+            for (let i = 0; i < 16; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Join Button Effect
+        document.getElementById('join-btn').addEventListener('click', function() {
+            this.innerHTML = `ACCESS DENIED // ${generateHash()}`;
+            this.style.borderColor = 'var(--alert-red)';
+            this.style.color = 'var(--alert-red)';
+            setTimeout(() => {
+                this.innerHTML = 'INITIATE HANDSHAKE';
+                this.style.borderColor = 'var(--terminal-green)';
+                this.style.color = 'var(--terminal-green)';
+            }, 2000);
+        });
+
+        // Initialize
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+        
+        resize();
+        initParticles();
+        animateCanvas();
+        
+        // Start everything
+        window.onload = runBootSequence;
 
     </script>
 </body>
