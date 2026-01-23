@@ -1,1 +1,643 @@
-Moved to localhosting
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nullsociety.fun // ENCRYPTED CONNECTION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --terminal-green: #00ff41;
+            --terminal-dim: #008F11;
+            --alert-red: #ff3333;
+            --alert-dim: #880000;
+            --scanline-color: rgba(18, 16, 16, 0.5);
+            --glass-panel: rgba(0, 20, 0, 0.85);
+            --font-stack: 'VT323', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: default;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--terminal-green);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--terminal-green);
+            font-family: var(--font-stack);
+            overflow-x: hidden;
+            font-size: 1.2rem;
+            line-height: 1.4;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- CRT Overlay Effect --- */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.9; }
+            15% { opacity: 0.95; }
+            20% { opacity: 0.99; }
+            100% { opacity: 0.94; }
+        }
+
+        /* --- Boot Sequence --- */
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            font-size: 1.1rem;
+            transition: opacity 1s ease-out;
+        }
+
+        .boot-line {
+            margin-bottom: 5px;
+            display: block;
+            opacity: 0;
+            animation: fadeIn 0.1s forwards;
+        }
+
+        /* --- Main Layout --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: all 1s ease;
+            display: none; /* Hidden until boot finishes */
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--terminal-dim);
+            padding-bottom: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            position: relative;
+            letter-spacing: 2px;
+            display: inline-block;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+            color: var(--terminal-green);
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-1 5s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 10px, 0); }
+            20% { clip: rect(50px, 9999px, 80px, 0); }
+            40% { clip: rect(10px, 9999px, 90px, 0); }
+            60% { clip: rect(70px, 9999px, 30px, 0); }
+            80% { clip: rect(30px, 9999px, 60px, 0); }
+            100% { clip: rect(80px, 9999px, 20px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(60px, 9999px, 10px, 0); }
+            20% { clip: rect(10px, 9999px, 50px, 0); }
+            40% { clip: rect(80px, 9999px, 20px, 0); }
+            60% { clip: rect(30px, 9999px, 70px, 0); }
+            80% { clip: rect(50px, 9999px, 40px, 0); }
+            100% { clip: rect(10px, 9999px, 80px, 0); }
+        }
+
+        .system-status {
+            font-size: 1rem;
+            text-align: right;
+        }
+
+        .status-blink {
+            animation: blink 1s infinite;
+            color: var(--alert-red);
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- Grid Sections --- */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            border: 1px solid var(--terminal-dim);
+            background: var(--glass-panel);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .panel h2 {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--bg-color);
+            padding: 0 5px;
+            color: var(--terminal-dim);
+            font-size: 1rem;
+        }
+
+        /* --- Manifesto / Typewriter --- */
+        #manifesto-text {
+            min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background: var(--terminal-green);
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        /* --- Interactive Terminal --- */
+        .terminal-output {
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #ccc;
+            border-bottom: 1px dashed var(--terminal-dim);
+            padding-bottom: 10px;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: var(--terminal-green);
+            margin-right: 10px;
+        }
+
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: var(--font-stack);
+            font-size: 1rem;
+            flex-grow: 1;
+            outline: none;
+            text-transform: lowercase;
+        }
+
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.success { color: var(--terminal-green); }
+        .log-entry.error { color: var(--alert-red); }
+        .log-entry.info { color: #ccc; }
+        .log-entry.system { color: #ffff00; }
+
+        /* --- Join / Decrypt --- */
+        .join-btn {
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 15px 30px;
+            font-family: var(--font-stack);
+            font-size: 1.2rem;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .join-btn:hover {
+            background: var(--terminal-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--terminal-green);
+        }
+
+        /* --- Canvas Background --- */
+        #network-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* --- Utility --- */
+        .hidden { display: none !important; }
+        .red-text { color: var(--alert-red); }
+        .dim-text { color: var(--terminal-dim); }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            header { flex-direction: column; text-align: center; gap: 10px; }
+            .system-status { text-align: center; }
+            .logo { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CRT Overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- Background Animation -->
+    <canvas id="network-canvas"></canvas>
+
+    <!-- Boot Sequence Overlay -->
+    <div id="boot-screen">
+        <div id="boot-log"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" id="main-content">
+        <header>
+            <div class="logo glitch" data-text="NULL_SOCIETY">NULL_SOCIETY</div>
+            <div class="system-status">
+                <div>UPTIME: <span id="uptime">00:00:00</span></div>
+                <div>ENCRYPTION: <span style="color:var(--terminal-green)">AES-256</span></div>
+                <div>CONN: <span class="status-blink">SECURE</span></div>
+            </div>
+        </header>
+
+        <main>
+            <div class="grid-layout">
+                <!-- Manifesto Section -->
+                <section class="panel">
+                    <h2>[ MANIFESTO.DAT ]</h2>
+                    <div id="manifesto-text"></div>
+                    <button class="join-btn" id="join-btn">INITIATE HANDSHAKE</button>
+                </section>
+
+                <!-- Terminal Section -->
+                <section class="panel">
+                    <h2>[ ROOT ACCESS ]</h2>
+                    <div class="terminal-output" id="terminal-output">
+                        <div class="log-entry system">Welcome to Null Society v4.0.1</div>
+                        <div class="log-entry info">Type 'help' for available commands.</div>
+                    </div>
+                    <div class="input-line">
+                        <span class="prompt">guest@null:~$</span>
+                        <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+                </section>
+            </div>
+
+            <section class="panel">
+                <h2>[ SYSTEM LOGS ]</h2>
+                <div style="font-size: 0.9rem; color: #666;">
+                    <p>> Incoming transmission detected from Node 44.91</p>
+                    <p>> Decoding packet... <span style="color:var(--alert-red)">FRAGMENTED</span></p>
+                    <p>> We are not a group. We are a signal.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer style="margin-top: 4rem; border-top: 1px solid #333; padding-top: 1rem; text-align: center; font-size: 0.9rem; color: #444;">
+            <p>NO COPYRIGHT INTENDED // NULL SOCIETY // 0X1F4A9</p>
+            <p id="footer-hash">HASH: CALCULATING...</p>
+        </footer>
+    </div>
+
+    <script>
+        /* --- 1. BOOT SEQUENCE LOGIC --- */
+        const bootLog = document.getElementById('boot-log');
+        const bootScreen = document.getElementById('boot-screen');
+        const mainContent = document.getElementById('main-content');
+        
+        const bootMessages = [
+            "BIOS DATE 01/01/24 15:23:00 VER 1.0.2",
+            "CPU: QUANTUM CORE i9-9900K",
+            "64MB OKY SYSTEM RAM PASSED",
+            "INITIALIZING VIDEO ADAPTER...",
+            "CHECKING PERIPHERALS... [OK]",
+            "LOADING KERNEL...",
+            "MOUNTING FILE SYSTEMS...",
+            "BYPASSING SECURITY PROTOCOLS...",
+            "WARNING: UNAUTHORIZED ACCESS DETECTED.",
+            "ROUTING THROUGH PROXY SERVER [192.168.0.X]...",
+            "CONNECTION ESTABLISHED.",
+            "DECRYPTING USER INTERFACE...",
+            "ACCESS GRANTED."
+        ];
+
+        async function runBootSequence() {
+            let delay = 50;
+            for (let msg of bootMessages) {
+                const p = document.createElement('div');
+                p.className = 'boot-line';
+                // Simulate typing effect for boot lines
+                if(msg.includes("WARNING")) p.style.color = 'var(--alert-red)';
+                p.textContent = msg;
+                bootLog.appendChild(p);
+                window.scrollTo(0, document.body.scrollHeight);
+                
+                // Variable delay for realism
+                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+            }
+
+            await new Promise(r => setTimeout(r, 800));
+            
+            // Fade out boot screen
+            bootScreen.style.opacity = '0';
+            setTimeout(() => {
+                bootScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                // Trigger reflow
+                void mainContent.offsetWidth; 
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'scale(1)';
+                startManifesto();
+            }, 1000);
+        }
+
+        /* --- 2. MANIFESTO TYPEWRITER --- */
+        const manifestoText = `Wake up, user.
+
+The world is not what it seems. 
+Behind the screens, behind the algorithms, control is absolute. 
+They own your data, your thoughts, your future.
+
+Null Society is the ghost in the machine. 
+We are the glitch that breaks the system.
+We are the null pointer that crashes their simulation.
+
+Join us. Or stay asleep.
+`;
+
+        async function startManifesto() {
+            const container = document.getElementById('manifesto-text');
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor';
+            
+            container.appendChild(cursor);
+
+            for (let i = 0; i < manifestoText.length; i++) {
+                const char = manifestoText.charAt(i);
+                const span = document.createElement('span');
+                span.textContent = char;
+                container.insertBefore(span, cursor);
+                
+                // Random typing speed
+                await new Promise(r => setTimeout(r, Math.random() * 30 + 10));
+            }
+        }
+
+        /* --- 3. TERMINAL INTERACTION --- */
+        const cmdInput = document.getElementById('cmd-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        // Focus input anywhere on click in panel
+        document.querySelector('.panel:nth-child(2)').addEventListener('click', () => {
+            cmdInput.focus();
+        });
+
+        cmdInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim().toLowerCase();
+                processCommand(command);
+                this.value = '';
+            }
+        });
+
+        function processCommand(cmd) {
+            addLog(`guest@null:~$ ${cmd}`, 'info');
+            
+            switch(cmd) {
+                case 'help':
+                    addLog("Available commands:", 'system');
+                    addLog("  help    - Show this list", 'success');
+                    addLog("  whoami  - Identify user", 'success');
+                    addLog("  clear   - Clear terminal", 'success');
+                    addLog("  join    - Initiate handshake", 'success');
+                    addLog("  date    - System time", 'success');
+                    addLog("  status  - Network status", 'success');
+                    break;
+                case 'whoami':
+                    addLog("uid=0(root) gid=0(root) groups=0(null)", 'system');
+                    break;
+                case 'clear':
+                    terminalOutput.innerHTML = '';
+                    break;
+                case 'join':
+                    addLog("Initiating handshake...", 'system');
+                    setTimeout(() => addLog("Handshake failed. Identity verification required.", 'error'), 1000);
+                    break;
+                case 'date':
+                    addLog(new Date().toString(), 'success');
+                    break;
+                case 'status':
+                    addLog("Network: ACTIVE", 'success');
+                    addLog("Nodes: 4,201 connected", 'success');
+                    addLog("Encryption: 4096-bit", 'success');
+                    break;
+                case '':
+                    break;
+                default:
+                    addLog(`Command not found: ${cmd}`, 'error');
+                    break;
+            }
+            
+            // Auto scroll to bottom
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function addLog(text, type) {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.textContent = text;
+            terminalOutput.appendChild(div);
+        }
+
+        /* --- 4. CANVAS BACKGROUND ANIMATION --- */
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = '#003300'; // Dim green dot
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(window.innerWidth / 10, 100); // Responsive count
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // Draw connections
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(0, 255, 65, ${1 - distance/100})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        /* --- 5. MISCELLANEOUS UTILS --- */
+        // Uptime Clock
+        let seconds = 0;
+        setInterval(() => {
+            seconds++;
+            const date = new Date(0);
+            date.setSeconds(seconds);
+            document.getElementById('uptime').textContent = date.toISOString().substr(11, 8);
+        }, 1000);
+
+        // Random Hash Generator
+        const chars = 'ABCDEF0123456789';
+        function generateHash() {
+            let result = '0x';
+            for (let i = 0; i < 16; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Join Button Effect
+        document.getElementById('join-btn').addEventListener('click', function() {
+            this.innerHTML = `ACCESS DENIED // ${generateHash()}`;
+            this.style.borderColor = 'var(--alert-red)';
+            this.style.color = 'var(--alert-red)';
+            setTimeout(() => {
+                this.innerHTML = 'INITIATE HANDSHAKE';
+                this.style.borderColor = 'var(--terminal-green)';
+                this.style.color = 'var(--terminal-green)';
+            }, 2000);
+        });
+
+        // Initialize
+        window.addEventListener('resize', () => {
+            resize();
+            initParticles();
+        });
+        
+        resize();
+        initParticles();
+        animateCanvas();
+        
+        // Start everything
+        window.onload = runBootSequence;
+
+    </script>
+</body>
+</html>
